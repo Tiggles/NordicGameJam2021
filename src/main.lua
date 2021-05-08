@@ -12,6 +12,8 @@ local trolley = require("trolley")
 
 local minigame_frame = nil
 local icons = {}
+local player_won = false
+local game_victory = false
 
 screen_width = 960
 screen_height = 540
@@ -40,7 +42,8 @@ local states = {
     MINIGAME_ANIMATION_2 = 3,
     MINIGAME_ANIMATION_3 = 4,
     MINIGAME_ANIMATION_4 = 5,
-    MINIGAME_ACTIVE = 6
+    MINIGAME_ACTIVE = 6,
+    MINIGAME_EXIT = 7
 }
 
 local active_minigame = -1
@@ -93,6 +96,17 @@ function love.update(delta)
     elseif game_state == states.MINIGAME_ANIMATION_4 then
         if animationValue > 1.5 then
             game_state = states.MINIGAME_ACTIVE
+            animationValue = 0
+        end
+    elseif game_state == states.MINIGAME_EXIT then
+        if animationValue > 1.5 then
+            if player_won then
+                rpg.damageEnemy()
+            else
+                rpg.damagePlayer()
+            end
+            game_state = states.RPG
+            animationValue = 0
         end
     end
 
@@ -107,15 +121,11 @@ function love.update(delta)
             minigameActive.getWinCondition()
 
             if not minigameActive.isRunning() then
-                local didWin = minigameActive.getWinCondition()
-                if didWin then
-                    rpg.damageEnemy()
-                else
-                    rpg.damagePlayer()
-                end
+                player_won = minigameActive.getWinCondition()
                 minigameActive.reset()
                 rpg.setNextActionTimeRemaining(0.2)
-                game_state = states.RPG
+                game_state = states.MINIGAME_EXIT
+                animationValue = 0
                 minigameActive = nil
             end
         end
@@ -215,5 +225,14 @@ function drawAnimation()
     elseif game_state == states.MINIGAME_ANIMATION_4 then
         drawIcons(love.timer.getDelta())
         drawMarks(active_minigame)
+    elseif game_state == states.MINIGAME_EXIT then
+        local x = 0
+        if player_won then
+            x = lerp2(screen_width / 2, screen_width - 120, math.min(animationValue, 1))
+        else
+            x = lerp2(screen_width / 2, 120, math.min(animationValue, 1))
+        end
+        local y = lerp2(screen_height / 2, 100, math.min(animationValue, 1))
+        love.graphics.draw(paper, x, y, 0, 1, 1)
     end
 end

@@ -18,7 +18,7 @@ local attackCount = 4
 local selectedAttack = attacks.SWING
 
 local player = {x = 50, y = screen_height / 2, health = 5}
-local enemy = {x = screen_width - 50 - 25 / 2 - 15, y = screen_height / 2, health = 2}
+local enemy = {x = screen_width - 50 - 25 / 2 - 15, y = screen_height / 2, health = 3}
 
 local arrow = nil
 
@@ -55,12 +55,12 @@ local function draw()
 
     love.graphics.draw(gfx.enemy0, enemy.x, enemy.y, 0, 4, 4)
 
-    for i = 0, player.health do
-        love.graphics.draw(gfx.heart, 10 + i * gfx.heart:getWidth() * 3, 10, 0, 3, 3)
+    for i = 1, player.health do
+        love.graphics.draw(gfx.heart, i * gfx.heart:getWidth() * 3 - 30, 10, 0, 3, 3)
     end
 
-    for i = 0, enemy.health do
-        love.graphics.draw(gfx.heart, screen_width - 10 - i * gfx.heart:getWidth() * 3 - gfx.heart:getWidth() * 3, 10, 0, 3, 3)
+    for i = 1, enemy.health do
+        love.graphics.draw(gfx.heart, screen_width + 30 - i * gfx.heart:getWidth() * 3 - gfx.heart:getWidth() * 3, 10, 0, 3, 3)
     end
 
     love.graphics.setColor(1, 1, 1, 1)
@@ -87,6 +87,10 @@ end
 
 function damageEnemy()
     enemy.health = enemy.health - 1
+
+    if enemy.health == 0 then
+        -- TODO next enemy
+    end
 end
 
 local function load()
@@ -105,5 +109,5 @@ return {
     selectionMade = getSelection,
     damageEnemy = damageEnemy,
     damagePlayer = damagePlayer,
-    setNextActionTimeRemaining = setNextActionTimeRemaining
+    setNextActionTimeRemaining = setNextActionTimeRemaining,
 }
