@@ -10,6 +10,9 @@ require("stamp_hero")
 require("rpg")
 local trolley = require("trolley")
 
+screen_width = 960
+screen_height = 540
+
 function love.load()
     rpg.load()
     stampHero.load()
@@ -40,12 +43,31 @@ function love.update(delta)
 
     rpg.update(delta, minigameActive)
     if rpg.selectionMade() ~= nil then
-        minigameActive = trolley
+        local result = math.random(1, 2)
+        if (result == 1) then
+            minigameActive = trolley
+        else
+            minigameActive = stampHero
+        end
         tweenValue = 0
     end
 
     if minigameActive ~= nil then
         minigameActive.update(delta)
+        if not minigameActive.isRunning() then
+            minigameActive.getWinCondition()
+
+            if not stampHero.isRunning() then
+                local didWin = stampHero.getWinCondition()
+                if didWin then
+                    rpg.damageEnemy()
+                else
+                    rpg.damagePlayer()
+                end
+                minigameActive.reset()
+                minigameActive = nil
+            end
+        end
     end
 end
 
