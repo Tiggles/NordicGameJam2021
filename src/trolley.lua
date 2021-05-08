@@ -437,7 +437,6 @@ function Trolley:update(dt)
 
             if points > 0 then
                 local loc = self:location()
-                print(loc[1])
                 table.insert(self.mails, Mail:new(loc[1], loc[2], offices[1], self.mailTypeSelected))
             end
 
