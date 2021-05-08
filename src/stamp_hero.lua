@@ -259,7 +259,7 @@ function reset()
     grid[colorEnum.ORANGE].forms = {}
 end
 
-stampHero = {
+return {
     draw = draw,
     update = update,
     load = load,
