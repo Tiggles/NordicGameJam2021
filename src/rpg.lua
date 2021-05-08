@@ -18,9 +18,21 @@ local attackCount = 4
 local selectedAttack = attacks.SWING
 
 local player = {x = 50, y = screen_height / 2, health = 5}
-local enemy = {x = screen_width - 50 - 25 / 2 - 15, y = screen_height / 2, health = 3}
+local enemy = {x = screen_width - 50 - 25 / 2 - 15, y = screen_height / 2, health = 3, kind = 0}
 
 local arrow = nil
+
+local function gameWon()
+    return enemy.kind == 3
+end
+
+local function gameLost()
+    return player.health == 0
+end
+
+local function difficulty()
+    return enemy.kind
+end
 
 local nextActionTimeRemaining = 0
 
@@ -53,15 +65,25 @@ local function draw()
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(gfx.player, player.x, player.y, 0, 4, 4)
 
-    love.graphics.draw(gfx.enemy0, enemy.x, enemy.y, 0, 4, 4)
-
     for i = 1, player.health do
         love.graphics.draw(gfx.heart, i * gfx.heart:getWidth() * 3 - 30, 10, 0, 3, 3)
     end
 
-    for i = 1, enemy.health do
-        love.graphics.draw(gfx.heart, screen_width + 30 - i * gfx.heart:getWidth() * 3 - gfx.heart:getWidth() * 3, 10, 0, 3, 3)
+    if enemy.kind < 3 then
+        local enemyImg = nil
+        if enemy.kind == 0 then
+            enemyImg = gfx.enemy0
+        elseif enemy.kind == 1 then
+            enemyImg = gfx.enemy1
+        elseif enemy.kind == 2 then
+            enemyImg = gfx.enemy2
+        end
+        love.graphics.draw(enemyImg, enemy.x, enemy.y, 0, 4, 4)
+        for i = 1, enemy.health do
+            love.graphics.draw(gfx.heart, screen_width + 30 - i * gfx.heart:getWidth() * 3 - gfx.heart:getWidth() * 3, 10, 0, 3, 3)
+        end
     end
+
 
     love.graphics.setColor(1, 1, 1, 1)
 
@@ -71,6 +93,12 @@ local function draw()
     love.graphics.print("Bash shield", movebox.x + 10, movebox.y + attacks.BASH * 24 + 16)
     love.graphics.print("Kick", movebox.x + 10, movebox.y + attacks.KICK * 24 + 16)
     love.graphics.print("Just Chill", movebox.x + 10, movebox.y + attacks.CHILL * 24 + 16)
+
+    if gameWon() then
+        love.graphics.print("\t\t\t You won! \n Press Enter to play again", screen_width / 2 - 120, screen_height / 2 - 50)
+    elseif gameLost() then
+        love.graphics.print("\t\t\t\t You lost. \n Press Enter to play again", screen_width / 2 - 120, screen_height / 2 - 50)
+    end
 
     love.graphics.rectangle("line", -1, -1, screen_width + 2, screen_height + 2)
 end
@@ -89,7 +117,8 @@ function damageEnemy()
     enemy.health = enemy.health - 1
 
     if enemy.health == 0 then
-        -- TODO next enemy
+        enemy.kind = enemy.kind + 1
+        enemy.health = 3
     end
 end
 
@@ -110,4 +139,7 @@ return {
     damageEnemy = damageEnemy,
     damagePlayer = damagePlayer,
     setNextActionTimeRemaining = setNextActionTimeRemaining,
+    gameWon = gameWon,
+    gameLost = gameLost,
+    difficulty = difficulty
 }

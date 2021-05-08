@@ -43,7 +43,7 @@ local states = {
     MINIGAME_ANIMATION_3 = 4,
     MINIGAME_ANIMATION_4 = 5,
     MINIGAME_ACTIVE = 6,
-    MINIGAME_EXIT = 7
+    MINIGAME_EXIT = 7,
 }
 
 local active_minigame = -1
@@ -55,6 +55,8 @@ local tweenValue = 0
 local animationValue = 0
 
 function love.update(delta)
+    local won, lost = rpg.gameWon(), rpg.gameLost()
+
     if love.keyboard.isDown("escape") then
         love.event.quit()
     end
@@ -63,7 +65,13 @@ function love.update(delta)
         love.event.quit("restart")
     end
 
-    rpg.update(delta, minigameActive)
+    if won or lost then
+        if love.keyboard.isDown("return") then
+           love.event.quit("restart")
+        end
+    end
+
+    rpg.update(delta, minigameActive or won or lost)
     if rpg.selectionMade() ~= nil then
         local result = math.random(1, 2)
         if (result == 1) then
