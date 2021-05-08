@@ -1,6 +1,11 @@
 local m = {}
 
 --region Util
+local function playSound(sound)
+    sound:seek(0)
+    sound:play()
+end
+
 local function hexColor(hex, alpha)
     if alpha == nil then
         alpha = 1
@@ -75,12 +80,19 @@ local DIRECTION_HALLWAY = 3
 local blockInput = false
 
 local randomSignatures = {
-    "fie",
-    "hund",
-    "gooddog"
+    "bureaucratic",
+    "official",
+    "strict",
+    "rigid",
+    "administrative",
+    "complicated",
+    "convoluted",
+    "labyrinth",
+    "maze"
 }
 
 local emotions = {}
+local emotionSounds = {}
 
 local mailColors = {
     hexColor("#0e82ce"),
@@ -89,7 +101,9 @@ local mailColors = {
     hexColor("#c42c36")
 }
 
-local papers = {}
+local mailTextures = {}
+local deskTextures = {}
+local selectMailSound
 
 local tickSpeedI = 1
 local tickSpeeds = {
@@ -155,8 +169,8 @@ local speedTimer = Timer:new(12)
 --region Office
 local officeMarginX = 1
 local officeColumns = 6
-local officeWidth = officeColumns - officeMarginX * 2
-local officeHeight = 2
+local officeWidth = 3.5
+local officeHeight = 2.1
 local offices = {}
 
 ---@class Office
@@ -182,29 +196,33 @@ end
 
 function Office:draw()
     love.graphics.push()
-    love.graphics.setColor(mailColors[self.type])
     local loc = self:location()
     love.graphics.translate(loc[1], loc[2])
-    love.graphics.rectangle("fill", 0, 0, officeWidth * columnSize, officeHeight * columnSize)
+
+    love.graphics.push()
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.scale(2, 2)
+    love.graphics.draw(deskTextures[self.type])
+    love.graphics.pop()
 
     if self.pointsAwarded >= 0 then
         love.graphics.setColor(255, 255, 255)
 
         if not self.correctMail then
-            love.graphics.draw(emotions[5], 20, 20)
+            love.graphics.draw(emotions[5], 90, -45)
         elseif self.pointsAwarded == 0 then
-            love.graphics.draw(emotions[1], 20, 20)
+            love.graphics.draw(emotions[1], 90, -45)
         elseif self.pointsAwarded == 10 then
-            love.graphics.draw(emotions[2], 20, 20)
+            love.graphics.draw(emotions[2], 90, -45)
         elseif self.pointsAwarded == 20 then
-            love.graphics.draw(emotions[3], 20, 20)
+            love.graphics.draw(emotions[3], 90, -45)
         elseif self.pointsAwarded == 30 then
-            love.graphics.draw(emotions[4], 20, 20)
+            love.graphics.draw(emotions[4], 90, -45)
         end
     end
 
     -- Button
-    love.graphics.translate(officeWidth * columnSize - 32 - 10, officeHeight * columnSize - 32 - 10)
+    love.graphics.translate(officeWidth * columnSize - 32, officeHeight * columnSize - 32)
     love.graphics.scale(0.5, 0.5)
     local buttonRequired
     if self.type == 1 then
@@ -235,7 +253,7 @@ local Signature = {
 
 function Signature:activate()
     self.signatureRequired = randomSignatures[love.math.random(#randomSignatures)]
-    self.timer = 5
+    self.timer = 4
     self.signatureSoFar = ""
     blockInput = true
 
@@ -281,7 +299,11 @@ function Signature:draw()
     love.graphics.print("Signature required:")
 
     love.graphics.push()
-    love.graphics.translate(0, 50)
+
+    local fullText = love.graphics.newText(font, self.signatureRequired)
+    local marginX = (width - fullText:getWidth() - 10) / 2
+    love.graphics.translate(marginX, 50)
+
     for i = 1, string.len(self.signatureRequired) do
         local char = self.signatureRequired:sub(i, i)
         local charInput = nil
@@ -289,17 +311,18 @@ function Signature:draw()
             charInput = self.signatureSoFar:sub(i, i)
         end
 
+        local drawableChar = love.graphics.newText(font, char)
+
         if charInput ~= nil and charInput ~= char then
             love.graphics.setColor(hexColor("#c42c36"))
-            love.graphics.print(char, 0, 0)
         elseif charInput ~= nil then
             love.graphics.setColor(hexColor("#509b4b"))
-            love.graphics.print(char, 0, 0)
         else
             love.graphics.setColor(hexColor("#a3acbe"))
-            love.graphics.print(char, 0, 0)
         end
-        love.graphics.translate(20, 0)
+
+        love.graphics.draw(drawableChar, 0, 0)
+        love.graphics.translate(drawableChar:getWidth(), 0)
     end
     love.graphics.pop()
     love.graphics.pop()
@@ -346,7 +369,7 @@ function Mail:draw()
             lerp2(self.sx, targetLoc[1], (self.initial_time - self.timer) / self.initial_time),
             lerp2(self.sx, targetLoc[2], (self.initial_time - self.timer) / self.initial_time)
     )
-    love.graphics.draw(papers[self.type])
+    love.graphics.draw(mailTextures[self.type])
     love.graphics.pop()
 end
 function Mail:update(dt)
@@ -370,7 +393,6 @@ function Trolley:new()
     t.deliverDirection = nil
     t.trolleyAnimTimer = Timer:new(2)
     t.animFrame = 1
-    t.score = 0
     t.mails = {}
     return t
 end
@@ -384,14 +406,18 @@ end
 
 function Trolley:update(dt)
     if not blockInput then
-        if love.keyboard.isDown("q") then
+        if love.keyboard.isDown("q") and self.mailTypeSelected ~= 1 then
             self.mailTypeSelected = 1
-        elseif love.keyboard.isDown("w") then
+            playSound(selectMailSound)
+        elseif love.keyboard.isDown("w") and self.mailTypeSelected ~= 2 then
             self.mailTypeSelected = 2
-        elseif love.keyboard.isDown("e") then
+            playSound(selectMailSound)
+        elseif love.keyboard.isDown("e") and self.mailTypeSelected ~= 3 then
             self.mailTypeSelected = 3
-        elseif love.keyboard.isDown("r") then
+            playSound(selectMailSound)
+        elseif love.keyboard.isDown("r") and self.mailTypeSelected ~= 4 then
             self.mailTypeSelected = 4
+            playSound(selectMailSound)
         end
 
         if love.keyboard.isDown("i") then
@@ -440,6 +466,16 @@ function Trolley:update(dt)
                 table.insert(self.mails, Mail:new(loc[1], loc[2], offices[1], self.mailTypeSelected))
             end
 
+            if points == 0 then
+                playSound(emotionSounds[1])
+            elseif points == 10 then
+                playSound(emotionSounds[2])
+            elseif points == 20 then
+                playSound(emotionSounds[3])
+            elseif points == 30 then
+                playSound(emotionSounds[4])
+            end
+
             offices[1].pointsAwarded = points
         end
     end
@@ -453,10 +489,6 @@ function Trolley:update(dt)
 end
 
 function Trolley:draw()
-    -- The score
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.print("Score: " .. self.score, 300, 30)
-
     -- The trolley
     love.graphics.push()
     local loc = self:location()
@@ -506,14 +538,13 @@ local player = Trolley:new()
 function m.draw()
     love.graphics.clear(hexColor("#bf6f4a"))
 
-    player:draw()
-
     for i, office in ipairs(offices) do
         office:draw()
     end
 
-    Button:new("I", 88, love.graphics.getHeight() - (64 + 32), hexColor("#454545"), hexColor("#ffffff")):draw()
-    Button:new("P", love.graphics.getWidth() - 240 + 88, love.graphics.getHeight() - (64 + 32), hexColor("#454545"), hexColor("#ffffff")):draw()
+    Button:new("I", 150, love.graphics.getHeight() - (64 + 32), hexColor("#454545"), hexColor("#ffffff")):draw()
+    Button:new("P", love.graphics.getWidth() - 150 - 64, love.graphics.getHeight() - (64 + 32), hexColor("#454545"), hexColor("#ffffff")):draw()
+    player:draw()
     Signature:draw()
 end
 
@@ -538,6 +569,9 @@ function m.update(dt)
     for i, office in ipairs(offices) do
         office:update()
         if office.timer.timeRemaining <= 0 then
+            if office.pointsAwarded < 0 then
+                playSound(emotionSounds[1])
+            end
             table.remove(offices, i)
         end
     end
@@ -557,10 +591,23 @@ function m.load()
     table.insert(emotions, love.graphics.newImage("gpx/emote_heart.png"))
     table.insert(emotions, love.graphics.newImage("gpx/emote_question.png"))
 
-    table.insert(papers, love.graphics.newImage("gpx/paper_blue.png"))
-    table.insert(papers, love.graphics.newImage("gpx/paper_green.png"))
-    table.insert(papers, love.graphics.newImage("gpx/paper_orange.png"))
-    table.insert(papers, love.graphics.newImage("gpx/paper_red.png"))
+    table.insert(emotionSounds, love.audio.newSource("sfx/bad_delivery.ogg", "static"))
+    table.insert(emotionSounds, love.audio.newSource("sfx/decent_delivery.ogg", "static"))
+    table.insert(emotionSounds, love.audio.newSource("sfx/decent_delivery.ogg", "static"))
+    table.insert(emotionSounds, love.audio.newSource("sfx/great_delivery.ogg", "static"))
+    table.insert(emotionSounds, love.audio.newSource("sfx/bad_delivery.ogg", "static"))
+
+    selectMailSound = love.audio.newSource("sfx/select_mail.ogg", "static")
+
+    table.insert(mailTextures, love.graphics.newImage("gpx/paper_blue.png"))
+    table.insert(mailTextures, love.graphics.newImage("gpx/paper_green.png"))
+    table.insert(mailTextures, love.graphics.newImage("gpx/paper_orange.png"))
+    table.insert(mailTextures, love.graphics.newImage("gpx/paper_red.png"))
+
+    table.insert(deskTextures, love.graphics.newImage("gpx/officedesk_blue.png"))
+    table.insert(deskTextures, love.graphics.newImage("gpx/officedesk_green.png"))
+    table.insert(deskTextures, love.graphics.newImage("gpx/officedesk_orange.png"))
+    table.insert(deskTextures, love.graphics.newImage("gpx/officedesk_red.png"))
 
     love.keyboard.setKeyRepeat(true)
 end
