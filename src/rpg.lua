@@ -44,6 +44,7 @@ local function update(delta, input_disabled)
 end
 
 local function draw()
+
     love.graphics.setColor(0, 255, 0, 1)
     love.graphics.rectangle("fill", player.x, player.y, 25, 40)
     love.graphics.setColor(255, 0, 0, 1)
@@ -56,6 +57,8 @@ local function draw()
     love.graphics.print("Bash shield", movebox.x + 10, movebox.y + attacks.BASH * 24 + 16)
     love.graphics.print("Kick", movebox.x + 10, movebox.y + attacks.KICK * 24 + 16)
     love.graphics.print("Just Chill", movebox.x + 10, movebox.y + attacks.CHILL * 24 + 16)
+
+    love.graphics.rectangle("line", -1, -1, screen_width + 2, screen_height + 2)
 end
 
 local iconLerp = 0

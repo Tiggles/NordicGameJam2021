@@ -1,16 +1,16 @@
 local scale = 1.5
 local stamp_width = 128
 -- Temporary (as if)
-local stamp_height = 128
 local margin_stamp = 32
 local initial_stamp_offset = 180
 local y_offset_stamp = 52
 local next_form = 0.5
 local paused = false
+
 local form_speed = 400
 local form_height = 60 * scale
-local screen_height = 540
-local screen_width = 960
+local beltSpeed = 0.8
+local beltValue = 0
 local colorEnum = {
     BLUE = 0,
     RED = 1,
@@ -30,6 +30,7 @@ local sfxEnum = {
 local gfx = {}
 gfx.paper = {}
 gfx.stamps = {}
+gfx.beltQuads = {}
 sfx = {}
 
 local grid = {
@@ -49,6 +50,12 @@ function load()
     gfx.stamps[colorEnum.GREEN] = love.graphics.newImage("gpx/stamp_green.png")
     gfx.stamps[colorEnum.ORANGE] = love.graphics.newImage("gpx/stamp_orange.png")
 
+    gfx.belt = love.graphics.newImage("gpx/belt.png");
+
+    for i = 0, 8 do
+        gfx.beltQuads[i] = love.graphics.newQuad(i * 60, 0, 60, 16, 480, 16)
+    end
+
     sfx[sfxEnum.STAMP] = love.sound.newSoundData("sfx/stamp.wav")
 end
 
@@ -61,8 +68,20 @@ local key_cooldowns = {
 }
 
 function drawStampsAndForms()
+    love.graphics.setColor(191 / 255, 111 / 255, 74 / 255, 1)
+    love.graphics.rectangle("fill", 0, 0, 960, 540)
+    love.graphics.setColor(255, 255, 255, 1)
+
     for i = 0, #grid do
         local row = grid[i]
+
+        for k = 1, 24 do
+            love.graphics.draw(gfx.belt, gfx.beltQuads[(i + math.floor(beltValue)) % #gfx.beltQuads], row.x - 16, 24 * k - 24, 0, 1.5, 1.5)
+            if not getWinCondition() then
+                beltValue = beltValue + love.timer.getDelta() * beltSpeed
+            end
+
+        end
 
         local paper = gfx.paper[i]
         for j = 1, #row.forms do
@@ -89,8 +108,6 @@ function drawStampsAndForms()
         love.graphics.print(key, row.x + 25, row.y - 30)
         love.graphics.draw(gfx.stamps[i], row.x, lerp(row.y, row.y + 80, math.max(key_cooldowns[key], 0)), 0, scale, scale)
     end
-
-    love.graphics.setColor(255, 255, 255, 1)
 
     if paused then
         love.graphics.print("Paused", 960 / 2, 540 / 2)
@@ -132,10 +149,15 @@ function isColliding(stamp_y, form_y)
     return math.abs(stamp_y - form_y) <= form_height;
 end
 
-
-
 function update(delta)
     updateKeyCooldowns(key_cooldowns, delta)
+
+    if getWinCondition() then
+        if love.keyboard.isDown("space") and love.timer.getTime() > time_finish_allowed then
+            running = false
+        end
+        return
+    end
 
     if isKeyPressed("p", key_cooldowns) then
         paused = not paused
@@ -205,7 +227,7 @@ function update(delta)
 end
 
 function getWinCondition()
-
+    return stats.missed == 0 and stats.success >= 5
 end
 
 stampHero = {

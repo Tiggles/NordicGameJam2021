@@ -10,6 +10,15 @@ function love.load()
     stampHero.load()
 end
 
+local states = {
+    MENU = 0,
+    RPG = 1,
+    MINIGAME_ANIMATION = 2,
+    MINIGAME_ACTIVE = 3
+}
+
+local game_state = states.MENU
+
 local minigameActive = nil
 local tweenValue = 0
 
