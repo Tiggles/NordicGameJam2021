@@ -5,7 +5,8 @@ local margin_stamp = 32
 local initial_stamp_offset = 180
 local y_offset_stamp = 52
 local next_form = 0.5
-local paused = false
+local running = true
+local time_finish_allowed = 0
 
 local form_speed = 400
 local form_height = 60 * scale
@@ -34,10 +35,10 @@ gfx.beltQuads = {}
 sfx = {}
 
 local grid = {
-    [0] = {x = initial_stamp_offset, y = y_offset_stamp, color = {r = 255, g = 0, b = 0}, forms = {}, accepted_forms = {}},
-    [1] = {x = initial_stamp_offset + (1 * stamp_width) + (1 * margin_stamp), y = y_offset_stamp, color = {r = 0, g = 255, b = 0}, forms = {}},
-    [2] = {x = initial_stamp_offset + (2 * stamp_width) + (2 * margin_stamp), y = y_offset_stamp, color = {r = 0, g = 0, b = 255}, forms = {}},
-    [3] = {x = initial_stamp_offset + (3 * stamp_width) + (3 * margin_stamp), y = y_offset_stamp, color = {r = 255, g = 165, b = 0}, forms = {}},
+    [0] = {x = initial_stamp_offset, y = y_offset_stamp, forms = {}, accepted_forms = {}},
+    [1] = {x = initial_stamp_offset + (1 * stamp_width) + (1 * margin_stamp), y = y_offset_stamp, forms = {}},
+    [2] = {x = initial_stamp_offset + (2 * stamp_width) + (2 * margin_stamp), y = y_offset_stamp, forms = {}},
+    [3] = {x = initial_stamp_offset + (3 * stamp_width) + (3 * margin_stamp), y = y_offset_stamp, forms = {}},
 }
 function load()
     gfx.paper[colorEnum.BLUE] = love.graphics.newImage("gpx/paper_blue.png")
@@ -67,17 +68,21 @@ local key_cooldowns = {
     f = 0
 }
 
+function isGameOver()
+    return stats.missed > 0 or stats.success == 5
+end
+
 function drawStampsAndForms()
     love.graphics.setColor(191 / 255, 111 / 255, 74 / 255, 1)
     love.graphics.rectangle("fill", 0, 0, 960, 540)
-    love.graphics.setColor(255, 255, 255, 1)
+    love.graphics.setColor(1, 1, 1, 1)
 
     for i = 0, #grid do
         local row = grid[i]
 
         for k = 1, 24 do
             love.graphics.draw(gfx.belt, gfx.beltQuads[(i + math.floor(beltValue)) % #gfx.beltQuads], row.x - 16, 24 * k - 24, 0, 1.5, 1.5)
-            if not getWinCondition() then
+            if not isGameOver() then
                 beltValue = beltValue + love.timer.getDelta() * beltSpeed
             end
 
@@ -90,7 +95,7 @@ function drawStampsAndForms()
             if form.accepted ~= -1 then
                 love.graphics.setColor(0, 255, 0, 1)
                 love.graphics.rectangle("fill", row.x + 2, form.y + form.accepted, 35, 5)
-                love.graphics.setColor(255, 255, 255, 1)
+                love.graphics.setColor(1, 1, 1, 1)
             end
         end
 
@@ -109,11 +114,23 @@ function drawStampsAndForms()
         love.graphics.draw(gfx.stamps[i], row.x, lerp(row.y, row.y + 80, math.max(key_cooldowns[key], 0)), 0, scale, scale)
     end
 
-    if paused then
-        love.graphics.print("Paused", 960 / 2, 540 / 2)
-    end
-
     love.graphics.print(stats.success .. "/" .. stats.missed + stats.success, 5, 10)
+
+    local resultText = ""
+    if isGameOver() then
+        if (getWinCondition()) then
+            love.graphics.setColor(0, 1, 0, 1)
+            resultText = "Approved!"
+        else
+            love.graphics.setColor(1, 0, 0, 1)
+            resultText = "Denied!"
+        end
+
+        if (resultText ~= "") then
+            love.graphics.print(resultText .. " Press SPACE to continue", screen_width / 2, screen_height / 2)
+            love.graphics.setColor(1, 1, 1, 1)
+        end
+    end
 end
 
 function draw()
@@ -125,7 +142,6 @@ function isKeyPressed(key, cooldowns)
 end
 
 function updateKeyCooldowns(keys, delta)
-    keys["p"] = keys["p"] - delta;
     keys["a"] = keys["a"] - delta;
     keys["s"] = keys["s"] - delta;
     keys["d"] = keys["d"] - delta;
@@ -152,16 +168,14 @@ end
 function update(delta)
     updateKeyCooldowns(key_cooldowns, delta)
 
-    if getWinCondition() then
+    if isGameOver() then
+        if time_finish_allowed == 0 then
+            time_finish_allowed = love.timer.getTime() + 0.2
+        end
         if love.keyboard.isDown("space") and love.timer.getTime() > time_finish_allowed then
             running = false
         end
         return
-    end
-
-    if isKeyPressed("p", key_cooldowns) then
-        paused = not paused
-        setKeyCooldown("p", key_cooldowns, 0.5)
     end
 
     if paused then return end
@@ -227,13 +241,29 @@ function update(delta)
 end
 
 function getWinCondition()
-    return stats.missed == 0 and stats.success >= 5
+    return stats.missed == 0 and stats.success == 5
+end
+
+function isRunning()
+    return running
+end
+
+function reset()
+    stats.success = 0
+    stats.missed = 0
+    running = true
+    beltValue = 0
+    grid[colorEnum.BLUE].forms = {}
+    grid[colorEnum.RED].forms = {}
+    grid[colorEnum.GREEN].forms = {}
+    grid[colorEnum.ORANGE].forms = {}
 end
 
 stampHero = {
     draw = draw,
     update = update,
     load = load,
-    running = true,
+    isRunning = isRunning,
+    reset = reset,
     getWinCondition = getWinCondition
 }
