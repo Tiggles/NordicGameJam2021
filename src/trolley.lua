@@ -112,12 +112,11 @@ local selectMailSound
 
 local tickSpeedI = 1
 local tickSpeeds = {
-    300,
-    250,
     200,
     180,
     150,
     120,
+    100,
 }
 
 local nColumnsX = 24
@@ -186,7 +185,7 @@ function Office:new()
     t.type = love.math.random(4)
     t.side = love.math.random(2)
     t.pointsAwarded = -1
-    t.requiresSignature = love.math.random(4) == 1
+    t.requiresSignature = love.math.random(2) == 1
     return t
 end
 
@@ -464,7 +463,7 @@ function Trolley:update(dt)
                 points = 30
             end
 
-            if points > 0 and offices[1].requiresSignature then
+            if points > 0 and offices[1].requiresSignature and not isEnding then
                 Signature:activate()
             end
 
@@ -653,7 +652,7 @@ function m.isRunning()
         if roundPoints < -60 then
             isEnding = true
             didWin = false
-        elseif roundPoints > 250 then
+        elseif roundPoints > 300 then
             isEnding = true
             didWin = true
         elseif roundTimer <= 0 then
@@ -675,6 +674,7 @@ function m.reset()
     roundTimer = 25
     roundPoints = 0
     tickSpeedI = 1
+    officeTimer:reset()
 end
 
 return m
