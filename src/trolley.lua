@@ -343,8 +343,8 @@ function Mail:draw()
     local targetLoc = self.target:location()
     love.graphics.setColor(255, 255, 255)
     love.graphics.translate(
-            lerp(self.sx, targetLoc[1], (self.initial_time - self.timer) / self.initial_time),
-            lerp(self.sx, targetLoc[2], (self.initial_time - self.timer) / self.initial_time)
+            lerp2(self.sx, targetLoc[1], (self.initial_time - self.timer) / self.initial_time),
+            lerp2(self.sx, targetLoc[2], (self.initial_time - self.timer) / self.initial_time)
     )
     love.graphics.draw(papers[self.type])
     love.graphics.pop()
@@ -548,20 +548,20 @@ function m.update(dt)
 end
 
 function m.load()
-    trolleyTexture = love.graphics.newImage("gfx/mailtrolley.png")
+    trolleyTexture = love.graphics.newImage("gpx/mailtrolley.png")
     table.insert(trolleyAnimation, love.graphics.newQuad(0, 0, 50, 70, trolleyTexture))
     table.insert(trolleyAnimation, love.graphics.newQuad(50, 0, 50, 70, trolleyTexture))
 
-    table.insert(emotions, love.graphics.newImage("gfx/emote_faceAngry.png"))
-    table.insert(emotions, love.graphics.newImage("gfx/emote_faceSad.png"))
-    table.insert(emotions, love.graphics.newImage("gfx/emote_faceHappy.png"))
-    table.insert(emotions, love.graphics.newImage("gfx/emote_heart.png"))
-    table.insert(emotions, love.graphics.newImage("gfx/emote_question.png"))
+    table.insert(emotions, love.graphics.newImage("gpx/emote_faceAngry.png"))
+    table.insert(emotions, love.graphics.newImage("gpx/emote_faceSad.png"))
+    table.insert(emotions, love.graphics.newImage("gpx/emote_faceHappy.png"))
+    table.insert(emotions, love.graphics.newImage("gpx/emote_heart.png"))
+    table.insert(emotions, love.graphics.newImage("gpx/emote_question.png"))
 
-    table.insert(papers, love.graphics.newImage("gfx/paper_blue.png"))
-    table.insert(papers, love.graphics.newImage("gfx/paper_green.png"))
-    table.insert(papers, love.graphics.newImage("gfx/paper_orange.png"))
-    table.insert(papers, love.graphics.newImage("gfx/paper_red.png"))
+    table.insert(papers, love.graphics.newImage("gpx/paper_blue.png"))
+    table.insert(papers, love.graphics.newImage("gpx/paper_green.png"))
+    table.insert(papers, love.graphics.newImage("gpx/paper_orange.png"))
+    table.insert(papers, love.graphics.newImage("gpx/paper_red.png"))
 
     love.keyboard.setKeyRepeat(true)
 end

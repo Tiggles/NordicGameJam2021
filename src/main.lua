@@ -8,13 +8,13 @@ end
 
 require("stamp_hero")
 require("rpg")
-require("trolley")
+local trolley = require("trolley")
 
 function love.load()
     rpg.load()
     stampHero.load()
     trolley.load()
-    -- font = love.graphics.newFont("assets/OpenSansEmoji.ttf", 20)
+    font = love.graphics.newFont("assets/OpenSansEmoji.ttf", 20)
 end
 
 local states = {
@@ -40,7 +40,7 @@ function love.update(delta)
 
     rpg.update(delta, minigameActive)
     if rpg.selectionMade() ~= nil then
-        minigameActive = stampHero
+        minigameActive = trolley
         tweenValue = 0
     end
 
@@ -50,6 +50,7 @@ function love.update(delta)
 end
 
 function love.draw()
+    love.graphics.setFont(font)
     love.graphics.translate(0, 0)
     love.graphics.scale(1)
     if minigameActive ~= nil then
@@ -70,6 +71,6 @@ end
 
 function love.keypressed(key)
     if minigameActive ~= nil and minigameActive["keypressed"] ~= nil then
-        trolley.keypressed(key)
+        minigameActive.keypressed(key)
     end
 end
