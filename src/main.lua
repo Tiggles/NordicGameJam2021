@@ -57,8 +57,8 @@ function love.update(delta)
         if not minigameActive.isRunning() then
             minigameActive.getWinCondition()
 
-            if not stampHero.isRunning() then
-                local didWin = stampHero.getWinCondition()
+            if not minigameActive.isRunning() then
+                local didWin = minigameActive.getWinCondition()
                 if didWin then
                     rpg.damageEnemy()
                 else

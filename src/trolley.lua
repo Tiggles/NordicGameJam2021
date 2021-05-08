@@ -1,5 +1,10 @@
 local m = {}
 
+local roundPoints = 0
+local roundTimer = 25
+local isEnding = false
+local didWin = false
+
 --region Util
 local function playSound(sound)
     sound:seek(0)
@@ -273,11 +278,13 @@ function Signature:update(dt)
 
     if self.signatureRequired == self.signatureSoFar then
         self:deactivate()
+        roundPoints = roundPoints + 10
     end
 
     self.timer = self.timer - dt
     if self.timer < 0 then
         self:deactivate()
+        roundPoints = roundPoints - 30
     end
 end
 
@@ -546,6 +553,22 @@ function m.draw()
     Button:new("P", love.graphics.getWidth() - 150 - 64, love.graphics.getHeight() - (64 + 32), hexColor("#454545"), hexColor("#ffffff")):draw()
     player:draw()
     Signature:draw()
+
+    if isEnding then
+        local text
+        if didWin then
+            text = love.graphics.newText(font, "Application approved")
+        else
+            text = love.graphics.newText(font, "Application rejected")
+        end
+
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.draw(
+                text,
+                (love.graphics.getWidth() - text:getWidth()) / 2,
+                (love.graphics.getHeight() - text:getHeight()) / 2
+        )
+    end
 end
 
 function m.update(dt)
@@ -555,7 +578,7 @@ function m.update(dt)
 
     timers_update(dt)
 
-    if officeTimer.timeRemaining <= 0 then
+    if officeTimer.timeRemaining <= 0 and not isEnding then
         table.insert(offices, Office:new())
         officeTimer:reset()
     end
@@ -571,10 +594,15 @@ function m.update(dt)
         if office.timer.timeRemaining <= 0 then
             if office.pointsAwarded < 0 then
                 playSound(emotionSounds[1])
+                roundPoints = roundPoints - 30
+            else
+                roundPoints = roundPoints + office.pointsAwarded
             end
             table.remove(offices, i)
         end
     end
+
+    roundTimer = roundTimer - dt
 
     player:update(dt)
     Signature:update(dt)
@@ -618,6 +646,35 @@ end
 
 function m.textinput(t)
     Signature:textinput(t)
+end
+
+function m.isRunning()
+    if not isEnding then
+        if roundPoints < -60 then
+            isEnding = true
+            didWin = false
+        elseif roundPoints > 250 then
+            isEnding = true
+            didWin = true
+        elseif roundTimer <= 0 then
+            isEnding = true
+            didWin = false
+        end
+    end
+
+    return not isEnding or #offices > 0
+end
+
+function m.getWinCondition()
+    return didWin
+end
+
+function m.reset()
+    isEnding = false
+    didWin = false
+    roundTimer = 25
+    roundPoints = 0
+    tickSpeedI = 1
 end
 
 return m
