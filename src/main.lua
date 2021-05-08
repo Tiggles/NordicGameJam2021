@@ -45,4 +45,6 @@ function love.draw()
         love.graphics.scale(lerp(1, -7/8, tweenValue))
     end
     rpg.draw()
+    -- drawIcons(love.timer.getDelta())
 end
+
