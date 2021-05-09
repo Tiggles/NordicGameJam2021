@@ -152,6 +152,7 @@ function love.draw()
     end
     rpg.draw()
 
+    love.graphics.setColor(255, 255, 255)
     drawAnimation()
 
     if game_state == states.MINIGAME_ACTIVE or game_state == states.MINIGAME_ANIMATION_2 or game_state == states.MINIGAME_ANIMATION_3 or game_state == states.MINIGAME_ANIMATION_4 then

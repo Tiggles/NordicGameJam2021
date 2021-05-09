@@ -18,7 +18,7 @@ local attackCount = 4
 local selectedAttack = attacks.SWING
 
 local player = {x = 50, y = screen_height / 2, health = 5}
-local enemy = {x = screen_width - 50 - 25 / 2 - 15, y = screen_height / 2, health = 3, kind = 0}
+local enemy = {x = screen_width - 64 - 50 , y = screen_height / 2, health = 3, kind = 0}
 
 local arrow = nil
 
@@ -56,8 +56,8 @@ end
 
 
 local function draw()
-    love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("fill",0, 0, screen_width, screen_height)
+    love.graphics.setColor(255, 255, 255, 1)
+    love.graphics.draw(gfx.background, 0, 0, 0, 4, 4)
 
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(gfx.player, player.x, player.y, 0, 4, 4)
@@ -82,22 +82,25 @@ local function draw()
     end
 
 
-    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setColor(0, 0, 0, 1)
 
-    love.graphics.rectangle("line", movebox.x, movebox.y, movebox.width, movebox.height)
+    love.graphics.rectangle("fill", movebox.x, movebox.y, movebox.width, movebox.height)
     love.graphics.draw(arrow, lerp(movebox.x - 60, 10, math.cos(love.timer.getTime())), movebox.y + 24 * selectedAttack + 8)
+
+    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print("Swing sword", movebox.x + 10, movebox.y + attacks.SWING * 24 + 16)
     love.graphics.print("Bash shield", movebox.x + 10, movebox.y + attacks.BASH * 24 + 16)
     love.graphics.print("Kick", movebox.x + 10, movebox.y + attacks.KICK * 24 + 16)
     love.graphics.print("Just Chill", movebox.x + 10, movebox.y + attacks.CHILL * 24 + 16)
 
+    love.graphics.rectangle("line", -1, -1, screen_width + 2, screen_height + 2)
+
+    love.graphics.setColor(0, 0, 0, 1)
     if gameWon() then
         love.graphics.print("\t\t\t You won! \n Press Enter to play again", screen_width / 2 - 120, screen_height / 2 - 50)
     elseif gameLost() then
         love.graphics.print("\t\t\t\t You lost. \n Press Enter to play again", screen_width / 2 - 120, screen_height / 2 - 50)
     end
-
-    love.graphics.rectangle("line", -1, -1, screen_width + 2, screen_height + 2)
 end
 
 function getSelection()
@@ -126,6 +129,7 @@ local function load()
     gfx.enemy1 = love.graphics.newImage("gpx/mono_sprites/enemy1.png")
     gfx.enemy2 = love.graphics.newImage("gpx/mono_sprites/enemy2.png")
     gfx.heart = love.graphics.newImage("gpx/mono_sprites/heart2.png")
+    gfx.background = love.graphics.newImage("gpx/bg.png")
 end
 
 return {
