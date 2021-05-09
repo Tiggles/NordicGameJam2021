@@ -1,5 +1,7 @@
 local scale = 1.5
 local stamp_width = 128
+
+local rpg = require("rpg")
 -- Temporary (as if)
 local margin_stamp = 32
 local initial_stamp_offset = 180
@@ -10,7 +12,7 @@ local time_finish_allowed = 0
 
 local form_speed = 400
 local form_height = 60 * scale
-local beltSpeed = 0.8
+local beltSpeed = 0.5
 local beltValue = 0
 local colorEnum = {
     BLUE = 0,
@@ -61,11 +63,10 @@ function load()
 end
 
 local key_cooldowns = {
-    p = 0,
-    a = 0,
-    s = 0,
-    d = 0,
-    f = 0
+    q = 0,
+    w = 0,
+    e = 0,
+    r = 0
 }
 
 function isGameOver()
@@ -93,42 +94,45 @@ function drawStampsAndForms()
             local form = row.forms[j]
             love.graphics.draw(paper, row.x - 8, form.y, 0, scale, scale)
             if form.accepted ~= -1 then
-                love.graphics.setColor(0, 255, 0, 1)
-                love.graphics.rectangle("fill", row.x + 2, form.y + form.accepted, 35, 5)
+                love.graphics.setColor(0, 1, 0, 1)
+                love.graphics.rectangle("fill", row.x + 2, form.y + form.accepted, 50, 8)
                 love.graphics.setColor(1, 1, 1, 1)
             end
         end
 
         local key = ""
         if colorEnum.BLUE == i then
-            key = "a"
+            key = "q"
         elseif colorEnum.RED == i then
-            key = "s"
+            key = "w"
         elseif colorEnum.GREEN == i then
-            key = "d"
+            key = "e"
         elseif colorEnum.ORANGE == i then
-            key = "f"
+            key = "r"
         end
 
-        love.graphics.print(key, row.x + 25, row.y - 30)
+        love.graphics.print(key, row.x + 22, row.y - 30)
         love.graphics.draw(gfx.stamps[i], row.x, lerp(row.y, row.y + 80, math.max(key_cooldowns[key], 0)), 0, scale, scale)
     end
 
-    love.graphics.print(stats.success .. "/" .. stats.missed + stats.success, 5, 10)
+    love.graphics.print(stats.success .. "/" .. 5, 5, 10)
 
-    local resultText = ""
     if isGameOver() then
-        if (getWinCondition()) then
-            love.graphics.setColor(0, 1, 0, 1)
-            resultText = "Approved!"
-        else
-            love.graphics.setColor(1, 0, 0, 1)
-            resultText = "Denied!"
-        end
 
         if (resultText ~= "") then
-            love.graphics.print(resultText .. " Press SPACE to continue", screen_width / 2, screen_height / 2)
-            love.graphics.setColor(1, 1, 1, 1)
+            local text
+            if getWinCondition() then
+                text = love.graphics.newText(font, "Application approved.\nPress SPACE to continue")
+            else
+                text = love.graphics.newText(font, "Application rejected.\nPress SPACE to continue")
+            end
+
+            love.graphics.setColor(255, 255, 255)
+            love.graphics.draw(
+                    text,
+                    (love.graphics.getWidth() - text:getWidth()) / 2,
+                    (love.graphics.getHeight() - text:getHeight()) / 2
+            )
         end
     end
 end
@@ -142,10 +146,10 @@ function isKeyPressed(key, cooldowns)
 end
 
 function updateKeyCooldowns(keys, delta)
-    keys["a"] = keys["a"] - delta;
-    keys["s"] = keys["s"] - delta;
-    keys["d"] = keys["d"] - delta;
-    keys["f"] = keys["f"] - delta;
+    keys["q"] = keys["q"] - delta;
+    keys["w"] = keys["w"] - delta;
+    keys["e"] = keys["e"] - delta;
+    keys["r"] = keys["r"] - delta;
 end
 
 function setKeyCooldown(key, cooldowns, cooldown_time)
@@ -162,7 +166,7 @@ function updateFormsOnCollision(stamp)
 end
 
 function isColliding(stamp_y, form_y)
-    return math.abs(stamp_y - form_y) <= form_height;
+    return stamp_y + 80 > form_y and stamp_y < form_y + form_height
 end
 
 function update(delta)
@@ -180,42 +184,42 @@ function update(delta)
 
     if paused then return end
 
-    if isKeyPressed("a", key_cooldowns) then
+    if isKeyPressed("q", key_cooldowns) then
         -- BLUE
         updateFormsOnCollision(grid[colorEnum.BLUE])
 
         love.audio.newSource(sfx[sfxEnum.STAMP]):play()
-        setKeyCooldown("a", key_cooldowns, 0.2)
+        setKeyCooldown("q", key_cooldowns, 0.2)
     end
 
-    if isKeyPressed("s", key_cooldowns) then
+    if isKeyPressed("w", key_cooldowns) then
         -- RED
         updateFormsOnCollision(grid[colorEnum.RED])
 
         love.audio.newSource(sfx[sfxEnum.STAMP]):play()
-        setKeyCooldown("s", key_cooldowns, 0.2)
+        setKeyCooldown("w", key_cooldowns, 0.2)
     end
 
-    if isKeyPressed("d", key_cooldowns) then
+    if isKeyPressed("e", key_cooldowns) then
         -- GREEN
         updateFormsOnCollision(grid[colorEnum.GREEN])
 
         love.audio.newSource(sfx[sfxEnum.STAMP]):play()
-        setKeyCooldown("d", key_cooldowns, 0.2)
+        setKeyCooldown("e", key_cooldowns, 0.2)
     end
 
-    if isKeyPressed("f", key_cooldowns) then
+    if isKeyPressed("r", key_cooldowns) then
         -- ORANGE
         updateFormsOnCollision(grid[colorEnum.ORANGE])
 
         love.audio.newSource(sfx[sfxEnum.STAMP]):play()
-        setKeyCooldown("f", key_cooldowns, 0.2)
+        setKeyCooldown("r", key_cooldowns, 0.2)
     end
 
 
     for i = 0, #grid do
         for j = 1, #grid[i].forms do
-            grid[i].forms[j].y = grid[i].forms[j].y - form_speed * delta
+            grid[i].forms[j].y = grid[i].forms[j].y - form_speed * delta * ((rpg.difficulty() + 1) / 2)
         end
     end
 
