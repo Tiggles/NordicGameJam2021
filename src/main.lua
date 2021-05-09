@@ -203,7 +203,7 @@ function love.draw()
         love.graphics.draw(text, screen_width / 2 - text:getWidth(), 30, 0, 2, 2)
         local description = love.graphics.newText(font, "In the future, or past maybe, murder is finally legal, \nbut only if you fill out the correct forms.\n\n\n\t\t\t\t\t\t\tPress Enter to start")
         love.graphics.draw(description, screen_width / 2 - description:getWidth() / 2, 120, 0, 1, 1)
-        local credits = love.graphics.newText(font, "Artwork: xiroV\nProgramming & additional tasks: Truek & Tiggles\nMusic by: \nMonochrome RPG artpack from: https://kenney.nl/assets/monochrome-rpg")
+        local credits = love.graphics.newText(font, "Artwork: xiroV\nProgramming & additional tasks: Truek & Tiggles\nMusic by: abstractionmusic.com, JP Soundworks (https://www.youtube.com/c/JPSoundworks/)\nSFX: https://omegaosg.itch.io/gameboy-sfx-pack, https://kenney.nl\nMonochrome RPG artpack from: https://kenney.nl/assets/monochrome-rpg")
         love.graphics.draw(credits, 10, screen_height - 20 - credits:getHeight(), 0, 1, 1)
         return
     end
