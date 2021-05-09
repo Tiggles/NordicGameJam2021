@@ -1,4 +1,4 @@
-# Death of Bureaucracy
+# Death to Bureaucracy
 
 ## Minigames
 
