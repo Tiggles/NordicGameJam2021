@@ -187,33 +187,33 @@ function drawIcons(delta)
 end
 
 function drawPostman(lerpValue)
-    local x = lerp2(-20, (screen_width / 3), lerpValue)
+    local x = lerp2(-20, (screen_width / 3) + 20, lerpValue)
     local y = lerp2(screen_height + 40, screen_height / 2, lerpValue)
     love.graphics.draw(icons.foot, x, y, 0, 2, 2)
     love.graphics.draw(minigame_frame, x, y, 0, 2, 2)
 end
 
 function drawTrolley(lerpValue)
-    local x = screen_width / 2 - 50
+    local x = screen_width / 2 - 30
     local y = lerp2(screen_height + 40, screen_height / 2, lerpValue)
     love.graphics.draw(icons.trolley, icons.trolley_quad, x, y)
     love.graphics.draw(minigame_frame, x, y, 0, 2, 2)
 end
 
 function drawStampHero(lerpValue)
-    local x = lerp2(screen_width + 20, screen_width / 2 + 50, lerpValue)
+    local x = lerp2(screen_width + 20, screen_width / 2 + 70, lerpValue)
     local y = lerp2(screen_height + 40, screen_height / 2, lerpValue)
     love.graphics.draw(icons.stamp, x + 15, y + 15)
     love.graphics.draw(minigame_frame, x, y, 0, 2, 2)
 end
 
 function drawMarks()
-     love.graphics.draw(icons.check, screen_width / 3 + 10, screen_height / 2 - 50, 0 , 2, 2)
+    love.graphics.draw(icons.check, screen_width / 3 + 30, screen_height / 2 - 50, 0 , 2, 2)
     if active_minigame == 1 then
-        love.graphics.draw(icons.arrow, screen_width / 2, screen_height / 2 - 50, 3.14/2)
+        love.graphics.draw(icons.arrow, screen_width / 2 + 20, screen_height / 2 - 50, 3.14/2)
     else
-        love.graphics.draw(icons.check,screen_width / 2 - 50 + 10, screen_height / 2 - 50, 0, 2, 2)
-        love.graphics.draw(icons.arrow, screen_width / 2 + 100, screen_height / 2 - 50, 3.14/2)
+        love.graphics.draw(icons.check,screen_width / 2 - 50 + 30, screen_height / 2 - 50, 0, 2, 2)
+        love.graphics.draw(icons.arrow, screen_width / 2 + 120, screen_height / 2 - 50, 3.14/2)
     end
 end
 
