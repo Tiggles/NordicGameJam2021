@@ -572,6 +572,9 @@ function m.draw()
     player:draw()
     Signature:draw()
 
+    love.graphics.setColor(hexColor("#ffffff"))
+    love.graphics.print("Points: " .. roundPoints, 30, 30)
+
     if isEnding then
         local text
         if didWin then
@@ -644,6 +647,7 @@ function m.load()
     table.insert(emotionSounds, love.audio.newSource("sfx/bad_delivery.ogg", "static"))
 
     selectMailSound = love.audio.newSource("sfx/select_mail.ogg", "static")
+    selectMailSound:setVolume(0.6)
 
     table.insert(mailTextures, love.graphics.newImage("gpx/paper_blue.png"))
     table.insert(mailTextures, love.graphics.newImage("gpx/paper_green.png"))

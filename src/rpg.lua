@@ -14,6 +14,7 @@ local attacks = {
     CHILL = 3
 }
 local gfx = {}
+local sfx = {}
 local attackCount = 4
 local selectedAttack = attacks.SWING
 
