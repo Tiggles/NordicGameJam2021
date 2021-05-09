@@ -94,8 +94,8 @@ function drawStampsAndForms()
             local form = row.forms[j]
             love.graphics.draw(paper, row.x - 8, form.y, 0, scale, scale)
             if form.accepted ~= -1 then
-                love.graphics.setColor(0, 255, 0, 1)
-                love.graphics.rectangle("fill", row.x + 2, form.y + form.accepted, 35, 5)
+                love.graphics.setColor(0, 1, 0, 1)
+                love.graphics.rectangle("fill", row.x + 2, form.y + form.accepted, 50, 8)
                 love.graphics.setColor(1, 1, 1, 1)
             end
         end
@@ -122,9 +122,9 @@ function drawStampsAndForms()
         if (resultText ~= "") then
             local text
             if getWinCondition() then
-                text = love.graphics.newText(font, "Application approved.\n Press SPACE to continue")
+                text = love.graphics.newText(font, "Application approved.\nPress SPACE to continue")
             else
-                text = love.graphics.newText(font, "Application rejected.\n Press SPACE to continue")
+                text = love.graphics.newText(font, "Application rejected.\nPress SPACE to continue")
             end
 
             love.graphics.setColor(255, 255, 255)
