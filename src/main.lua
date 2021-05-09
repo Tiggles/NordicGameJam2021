@@ -18,7 +18,24 @@ local game_victory = false
 screen_width = 960
 screen_height = 540
 
+local maxMusicVolume = 0.5
+local musicTransitionTimer = 1
+local musicTransitionPeriod = 0.5
+
+local sfx = {}
+
 function love.load()
+    sfx.rpgMusic = love.audio.newSource("sfx/Battle_Music_1.ogg", "static")
+    sfx.rpgMusic:setLooping(true)
+    sfx.rpgMusic:setVolume(maxMusicVolume)
+    sfx.rpgMusic:play()
+
+    sfx.minigameMusic = love.audio.newSource("sfx/track1.ogg", "static")
+    sfx.minigameMusic:setLooping(true)
+
+    sfx.selection = love.audio.newSource("sfx/select.mp3", "static")
+    sfx.hit = love.audio.newSource("sfx/hit.mp3", "static")
+
     love.graphics.setDefaultFilter("nearest", "nearest")
     rpg.load()
     stampHero.load()
@@ -54,6 +71,10 @@ local tweenValue = 0
 
 local animationValue = 0
 
+function clamp(min, val, max)
+    return math.max(min, math.min(val, max));
+end
+
 function love.update(delta)
     local won, lost = rpg.gameWon(), rpg.gameLost()
 
@@ -68,6 +89,17 @@ function love.update(delta)
     if won or lost then
         if love.keyboard.isDown("return") then
            love.event.quit("restart")
+        end
+    end
+
+    musicTransitionTimer = musicTransitionTimer + delta
+    if musicTransitionTimer <= musicTransitionPeriod then
+        if game_state == states.MINIGAME_ACTIVE then
+            sfx.minigameMusic:setVolume(lerp2(0, maxMusicVolume, clamp(0, musicTransitionTimer / musicTransitionPeriod, 1)))
+            sfx.rpgMusic:setVolume(lerp2(maxMusicVolume, 0, clamp(0, musicTransitionTimer / musicTransitionPeriod, 1)))
+        else
+            sfx.rpgMusic:setVolume(lerp2(0, maxMusicVolume, clamp(0, musicTransitionTimer / musicTransitionPeriod, 1)))
+            sfx.minigameMusic:setVolume(lerp2(maxMusicVolume, 0, clamp(0, musicTransitionTimer / musicTransitionPeriod, 1)))
         end
     end
 
@@ -100,14 +132,23 @@ function love.update(delta)
         if animationValue > 1.5 then
             game_state = states.MINIGAME_ANIMATION_4
             animationValue = 0
+            sfx.selection:seek(0)
+            sfx.selection:play()
         end
     elseif game_state == states.MINIGAME_ANIMATION_4 then
         if animationValue > 1.5 then
             game_state = states.MINIGAME_ACTIVE
             animationValue = 0
+
+            sfx.rpgMusic:pause()
+            sfx.minigameMusic:setVolume(0)
+            sfx.minigameMusic:play()
+            musicTransitionTimer = 0
         end
     elseif game_state == states.MINIGAME_EXIT then
         if animationValue > 1.5 then
+            sfx.hit:seek(0)
+            sfx.hit:play(0)
             if player_won then
                 rpg.damageEnemy()
             else
@@ -134,6 +175,12 @@ function love.update(delta)
                 game_state = states.MINIGAME_EXIT
                 animationValue = 0
                 minigameActive = nil
+
+
+                sfx.minigameMusic:pause()
+                sfx.rpgMusic:setVolume(0)
+                sfx.rpgMusic:play()
+                musicTransitionTimer = 0
             end
         end
     end
