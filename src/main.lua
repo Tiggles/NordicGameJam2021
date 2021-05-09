@@ -47,7 +47,7 @@ local states = {
 }
 
 local active_minigame = -1
-local game_state = states.RPG
+local game_state = states.MENU
 
 local minigameActive = nil
 local tweenValue = 0
@@ -69,6 +69,10 @@ function love.update(delta)
         if love.keyboard.isDown("return") then
            love.event.quit("restart")
         end
+    end
+
+    if game_state == states.MENU and love.keyboard.isDown("return") then
+        game_state = states.RPG
     end
 
     rpg.update(delta, minigameActive or won or lost or game_state ~= states.RPG)
@@ -143,6 +147,19 @@ function love.draw()
     love.graphics.setFont(font)
     love.graphics.translate(0, 0)
     love.graphics.scale(1)
+
+    if game_state == states.MENU then
+        love.graphics.setColor(0, 0, 0, 1)
+        love.graphics.rectangle("fill", 0, 0, screen_width, screen_height)
+        love.graphics.setColor(1, 1, 1, 1)
+        local text = love.graphics.newText(font, "Death to Bureaucracy")
+        love.graphics.draw(text, screen_width / 2 - text:getWidth(), 30, 0, 2, 2)
+        local description = love.graphics.newText(font, "In the future, or past maybe, murder is finally legal, \nbut only if you fill out the correct forms.\n\n\n\t\t\t\t\t\t\tPress Enter to start")
+        love.graphics.draw(description, screen_width / 2 - description:getWidth() / 2, 120, 0, 1, 1)
+        local credits = love.graphics.newText(font, "Artwork: xiroV\nProgramming & additional tasks: Truek & Tiggles\nMusic by: \nMonochrome RPG artpack from: https://kenney.nl/assets/monochrome-rpg")
+        love.graphics.draw(credits, 10, screen_height - 20 - credits:getHeight(), 0, 1, 1)
+        return
+    end
 
     if minigameActive ~= nil and game_state == states.MINIGAME_ACTIVE then
         minigameActive.draw()
