@@ -34,29 +34,26 @@ local function difficulty()
     return enemy.kind
 end
 
-local nextActionTimeRemaining = 0
+local input_disabled
 
-local function update(delta, input_disabled)
-    if not input_disabled then
-        if nextActionTimeRemaining <= 0 then
-            if love.keyboard.isDown("down") then
-                selectedAttack = (selectedAttack + 1) % attackCount
-            elseif love.keyboard.isDown("up") then
-                selectedAttack = (selectedAttack - 1) % attackCount
-            elseif love.keyboard.isDown("space") then
-                selectionMade = selectedAttack
-            end
+local function keypressed(key)
+    if input_disabled then
+        return
+    end
 
-            nextActionTimeRemaining = 0.08
-        end
-
-        nextActionTimeRemaining = nextActionTimeRemaining - delta
+    if key == "down" then
+        selectedAttack = (selectedAttack + 1) % attackCount
+    elseif key == "up" then
+        selectedAttack = (selectedAttack - 1) % attackCount
+    elseif key == "space" or key == "return" then
+        selectionMade = selectedAttack
     end
 end
 
-function setNextActionTimeRemaining(time)
-    nextActionTimeRemaining = time
+local function update(delta, should_disable_input)
+    input_disabled = should_disable_input
 end
+
 
 local function draw()
     love.graphics.setColor(0, 0, 0, 1)
@@ -134,11 +131,11 @@ end
 return {
     update = update,
     draw = draw,
+    keypressed = keypressed,
     load = load,
     selectionMade = getSelection,
     damageEnemy = damageEnemy,
     damagePlayer = damagePlayer,
-    setNextActionTimeRemaining = setNextActionTimeRemaining,
     gameWon = gameWon,
     gameLost = gameLost,
     difficulty = difficulty

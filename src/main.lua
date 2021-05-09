@@ -71,7 +71,7 @@ function love.update(delta)
         end
     end
 
-    rpg.update(delta, minigameActive or won or lost)
+    rpg.update(delta, minigameActive or won or lost or game_state ~= states.RPG)
     if rpg.selectionMade() ~= nil then
         local result = math.random(1, 2)
         if (result == 1) then
@@ -131,7 +131,6 @@ function love.update(delta)
             if not minigameActive.isRunning() then
                 player_won = minigameActive.getWinCondition()
                 minigameActive.reset()
-                rpg.setNextActionTimeRemaining(0.2)
                 game_state = states.MINIGAME_EXIT
                 animationValue = 0
                 minigameActive = nil
@@ -167,6 +166,7 @@ function love.textinput(t)
 end
 
 function love.keypressed(key)
+    rpg.keypressed(key)
     if minigameActive ~= nil and minigameActive["keypressed"] ~= nil then
         minigameActive.keypressed(key)
     end

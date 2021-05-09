@@ -69,7 +69,7 @@ local key_cooldowns = {
 }
 
 function isGameOver()
-    return stats.missed > 0 or stats.success == 5
+    return stats.missed > 0 or stats.success >= 5
 end
 
 function drawStampsAndForms()
@@ -154,7 +154,7 @@ end
 
 function updateFormsOnCollision(stamp)
     for i = #stamp.forms, 1, -1 do
-        if (isColliding(stamp.y, stamp.forms[i].y)) then
+        if isColliding(stamp.y, stamp.forms[i].y) and stamp.forms[i].accepted == -1 then
             stats.success = stats.success + 1
             stamp.forms[i].accepted = stamp.y + 20
         end
