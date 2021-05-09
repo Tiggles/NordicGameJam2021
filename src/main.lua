@@ -152,9 +152,10 @@ function love.draw()
     end
     rpg.draw()
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     drawAnimation()
 
+    love.graphics.setColor(0, 0, 0)
     if game_state == states.MINIGAME_ACTIVE or game_state == states.MINIGAME_ANIMATION_2 or game_state == states.MINIGAME_ANIMATION_3 or game_state == states.MINIGAME_ANIMATION_4 then
         love.graphics.print("Your combat application is pending", screen_width / 2 - 150, 20)
     end

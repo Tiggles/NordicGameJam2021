@@ -1,5 +1,6 @@
 local m = {}
 
+local rpg = require("rpg")
 local roundPoints = 0
 local roundTimer = 25
 local isEnding = false
@@ -112,11 +113,29 @@ local selectMailSound
 
 local tickSpeedI = 1
 local tickSpeeds = {
-    200,
-    180,
-    150,
-    120,
-    100,
+    {
+        200,
+        180,
+        150,
+        120,
+        100,
+    } ,
+    {
+        150,
+        120,
+        100,
+        90,
+    },
+    {
+        100,
+        90,
+        80,
+    }
+}
+local signatureDeadlines = {
+    5,
+    4,
+    3
 }
 
 local nColumnsX = 24
@@ -257,7 +276,7 @@ local Signature = {
 
 function Signature:activate()
     self.signatureRequired = randomSignatures[love.math.random(#randomSignatures)]
-    self.timer = 4
+    self.timer = signatureDeadlines[rpg.difficulty() + 1]
     self.signatureSoFar = ""
     blockInput = true
 
@@ -265,7 +284,7 @@ function Signature:activate()
 end
 
 function Signature:deactivate()
-    currentTickSpeed = tickSpeeds[tickSpeedI]
+    currentTickSpeed = tickSpeeds[rpg.difficulty() + 1][tickSpeedI]
     self.signatureRequired = nil
     blockInput = false
 end
@@ -521,7 +540,7 @@ function Trolley:draw()
     -- The buttons
     love.graphics.push()
     love.graphics.scale(0.5, 0.5)
-    love.graphics.translate(0, -100)
+    love.graphics.translate(-37, -100)
     Button:new("Q", 0, self.mailTypeSelected == 1 and -16 or 0, mailColors[1], hexColor("#000000")):draw()
     love.graphics.translate(80, 0)
     Button:new("W", 0, self.mailTypeSelected == 2 and -16 or 0, mailColors[2], hexColor("#000000")):draw()
@@ -582,9 +601,9 @@ function m.update(dt)
         officeTimer:reset()
     end
 
-    if speedTimer.timeRemaining <= 0 and tickSpeedI < #tickSpeeds and Signature.signatureRequired == nil then
+    if speedTimer.timeRemaining <= 0 and tickSpeedI < #tickSpeeds[rpg.difficulty() + 1] and Signature.signatureRequired == nil then
         tickSpeedI = tickSpeedI + 1
-        currentTickSpeed = tickSpeeds[tickSpeedI]
+        currentTickSpeed = tickSpeeds[rpg.difficulty() + 1][tickSpeedI]
         speedTimer:reset()
     end
 
@@ -593,7 +612,7 @@ function m.update(dt)
         if office.timer.timeRemaining <= 0 then
             if office.pointsAwarded < 0 then
                 playSound(emotionSounds[1])
-                roundPoints = roundPoints - 30
+                roundPoints = roundPoints - 60
             else
                 roundPoints = roundPoints + office.pointsAwarded
             end
@@ -668,7 +687,7 @@ function m.getWinCondition()
     return didWin
 end
 
-function m.reset()
+function m.reset(diff)
     isEnding = false
     didWin = false
     roundTimer = 25
